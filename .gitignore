@@ -1,5 +1,11 @@
-settings.ini
+
 __pycache__/
-Backup
+.idea/**
+
+Backup/
 test.py
+settings.ini
 ReportOne/config.json
+
+
+

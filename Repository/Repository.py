@@ -38,14 +38,17 @@ class Jobs(Base):
     # Define column variables with foreign keys
     job_type = db.Column(db.Integer, db.ForeignKey("joboptions.id"), nullable=False)
     hazards = db.Column(db.Integer, db.ForeignKey("joboptions.id"), nullable=False)
-    status = db.Column(db.Integer, db.ForeignKey("joboptions.id"), nullable = False)
+    status = db.Column(db.Integer, db.ForeignKey("joboptions.id"), nullable=False)
     # Define the relationships between table variables
     rJob_type = orm.relationship("JobOptions", backref="jobs", foreign_keys=[job_type])
     rHazards = orm.relationship("JobOptions", foreign_keys=[hazards])
     rStatus = orm.relationship("JobOptions", foreign_keys=[status])
-    rInternal = orm.relationship("Internal", uselist=False, back_populates="rJobs")
-    def __repr__(self):
-        return "<internal(id=%s, %s)>" %(self.id, self.rInternal)
+    rInternal = orm.relationship("Internal", uselist=False, lazy="joined", join_depth=1)
+    rExternal = orm.relationship("External", uselist=False, lazy="joined", join_depth=1)
+    rStandardJobType = orm.relationship("StandardJobType", uselist=False, lazy="joined", join_depth=1)
+    rDesignJobType = orm.relationship("DesignJobType", uselist=False, lazy="joined", join_depth=1)
+    # def __repr__(self):
+    #     return "<internal(id=%s, %s)>" %(self.id, self.rInternal)
 
 # Define the joboptions table
 class JobOptions(Base):
@@ -63,20 +66,18 @@ class Internal(Base):
     staff_type_id = db.Column(db.Integer, db.ForeignKey("joboptions.id"))
     school_id = db.Column(db.Integer, db.ForeignKey("joboptions.id"))
     booked_by = db.Column(db.String, db.ForeignKey("usercache.username"))
-    rBuilding = orm.relationship("JobOptions",  foreign_keys=[building_id])
-    rStaffType = orm.relationship("JobOptions", foreign_keys=[staff_type_id])
-    rSchool = orm.relationship("JobOptions", foreign_keys=[school_id])
-    rBookedBy = orm.relationship("UserCache", foreign_keys=[booked_by])
-    rJobs = orm.relationship("Jobs", back_populates="rInternal")
+    rBuilding = orm.relationship("JobOptions",  foreign_keys=[building_id], lazy="subquery")
+    rStaffType = orm.relationship("JobOptions", foreign_keys=[staff_type_id], lazy="subquery")
+    rSchool = orm.relationship("JobOptions", foreign_keys=[school_id], lazy="subquery")
+    rBookedBy = orm.relationship("UserCache", foreign_keys=[booked_by], lazy="subquery")
 
 # Define the external table
 class External(Base):
     __tablename__ = "external"
     __table_args__ = {'autoload': True}
-    company_id = db.Column(db.Integer, db.ForeignKey("companies.id"))
     job_id = db.Column(db.Integer, db.ForeignKey("jobs.id"))
+    company_id = db.Column(db.Integer, db.ForeignKey("companies.id"))
     rCompany = orm.relationship("Companies")
-    rJobs = orm.relationship("Jobs")
 
 # Define the standardjobtype table
 class StandardJobType(Base):
@@ -85,8 +86,8 @@ class StandardJobType(Base):
     job_id = db.Column(db.Integer, db.ForeignKey("jobs.id"))
     assigned_user = db.Column(db.String, db.ForeignKey("usercache.username"))
     location = db.Column(db.Integer, db.ForeignKey("joboptions.id"))
-    rAssignedUser = orm.relationship("UserCache", foreign_keys=[assigned_user])
-    rLocation = orm.relationship("JobOptions", foreign_keys=[location])
+    rAssignedUser = orm.relationship("UserCache", foreign_keys=[assigned_user], lazy="subquery")
+    rLocation = orm.relationship("JobOptions", foreign_keys=[location], lazy="subquery")
 
 # Define the designjobtype table
 class DesignJobType(Base):
@@ -95,13 +96,15 @@ class DesignJobType(Base):
     job_id = db.Column(db.Integer, db.ForeignKey("jobs.id"))
     design_user = db.Column(db.String, db.ForeignKey("usercache.username"))
     constructor_user = db.Column(db.String, db.ForeignKey("usercache.username"))
-    rDesignUser = orm.relationship("UserCache", foreign_keys=[design_user])
-    rConstructorUser = orm.relationship("UserCache", foreign_keys=[constructor_user])
+    rDesignUser = orm.relationship("UserCache", foreign_keys=[design_user], lazy="subquery")
+    rConstructorUser = orm.relationship("UserCache", foreign_keys=[constructor_user], lazy="subquery")
 
 # Define the usercache table
 class UserCache(Base):
     __tablename__ = "usercache"
     __table_args__ = {'autoload': True}
+    school_id = db.Column(db.Integer, db.ForeignKey("joboptions.id"))
+    rSchoolId = orm.relationship("JobOptions", foreign_keys=[school_id], lazy="subquery")
 
 # Define the companies table
 class Companies(Base):
@@ -120,108 +123,76 @@ class Repository:
     def updTables(self):
         # Create a session
         session = orm.Session(bind=engine)
-        # Get a dataframe from the jobs table with table links, and set the index to the job id
-        self.mJobs = self.updTable(Jobs,
-                      columns=["id", "job_number", "clone_from", "man_hours", "pph", "consumables", "completed_time", "created_at", "updated_at", "deleted_at"],
-                      relColumns={"rJob_type":[["label"], ["jobType"]], "rHazards":[["label"], ["hazards"]], "rStatus":[["label"], ["status"]]}).set_index("id")
-        # All other tables refer to the jobs.id as job_id, so we change the index name
-        self.mJobs.index.name = "job_id"
-        # Get the dataframe for external table with table links
-        external = self.updTable(External,
-                                 columns=["job_id"], relColumns={"rCompany":[["company_name"], ["companyName"]]}).set_index("job_id")
-        internal = self.updTable(Internal,
-                                 columns=["job_id", "debt"],
-                                 relColumns={"rBuilding":[["label"], ["building"]],
-                                             "rStaffType":[["label"], ["staffType"]],
-                                             "rSchool":[["label"], ["school"]],
-                                             "rBookedBy":[["username", "first_name", "last_name", "school_id"],
-                                                          ["bookedByUser", "bookedByFirstName", "bookedByLastName", "bookedBySchoolId"]]}).set_index("job_id")
-        standardjobtype = self.updTable(StandardJobType,
-                                 columns=["job_id", "equitment", "description", "number_items"],
-                                 relColumns={"rAssignedUser": [["username", "first_name", "last_name"],
-                                                               ["assignedUser", "assignedFirstName", "assignedLastName", "assignedSchoolId"]],
-                                             "rLocation": [["label"], ["location"]]}).set_index("job_id")
-        designjobtype = self.updTable(DesignJobType,
-                                 columns=["job_id", "title", "specification"],
-                                 relColumns={"rDesignUser": [["username", "first_name", "last_name", "school_id"],
-                                                          ["designUser", "designFirstName", "designLastName", "designSchoolId"]],
-                                             "rConstructorUser": [["username", "first_name", "last_name", "school_id"],
-                                                                   ["constructorUser", "constructorFirstName", "constructorLastName", "constructorSchoolId"]]}).set_index("job_id")
 
-        # Add a new column to associate job with table
-        external["external"] = [True for x in external.index]
-        internal["internal"] = [True for x in internal.index]
-        standardjobtype["standardjobtype"] = [True for x in standardjobtype.index]
-        designjobtype["designjobtype"] = [True for x in designjobtype.index]
+        # Query for all jobs which have been successfully completed (that is not deleted, and not ongoing)
+        query = session.query(Jobs).filter(db.and_(Jobs.completed_time.isnot(None), Jobs.deleted_at.is_(None))).all()
 
-        # Add all the columns from the tables associated with each job
-        self.mJobs = pd.concat([self.mJobs, external, internal, standardjobtype, designjobtype], axis=1)
-        # print(self.mJobs)
-        # print(self.mJobs.columns)
-        # print(self.mJobs.loc[1, :])
-        return
+        # for row in query:
+        #     print(row.id)
 
-    def updJobs(self):
-        # Create a session
-        session = orm.Session(bind=engine)
-        # Note have not included visit,notes,email_collection,resolution from table
-        # Create list of dataframes columns.
-        data = [
-            pd.read_sql('jobs', engine, columns=["job_number", "clone_from", "man_hours", "pph", "consumables", "completed_time", "created_at", "updated_at", "deleted_at"]),
-            pd.DataFrame(self.getRelationCol(Jobs, "rJob_type", ["label"], name=["job_type"])),
-            pd.DataFrame(self.getRelationCol(Jobs, "rHazards", ["label"], name=["hazards"])),
-            pd.DataFrame(self.getRelationCol(Jobs, "rStatus", ["label"], name=["status"]))]
-        # Create dataframe from columns
-        self.mJobs = pd.concat(data, axis=1)
-        print(self.mJobs.columns)
-        # Close session
-        session.close()
-        return
-
-    def updTable(self, table, **columns):
-        # Create a session
-        session = orm.Session(bind=engine)
-        # Get the columns which are not related to other tables
-        data = [pd.read_sql(table.__tablename__, engine, columns=columns.get("columns"))]
-        # Iterate through each relationship column, and append to data the columns of associated table
-        for key in columns.get("relColumns"):
-            value = columns.get("relColumns")[key]
-            data.append(pd.DataFrame(self.getRelationCol(table, key, value[0], name=value[1])))
-        # Create dataframe from columns
-        var = pd.concat(data, axis=1)
-        # Close session
-        session.close()
-        return var
-
-
-    '''
-    # Returns a list of lists representing the columns of the associated table, using the relationship variable.
-    # @param: "table": The table with the relationship variable.
-    # @param: "relation": The string with name of the relationship variable.
-    # @param: "columns": List of strings of column names wanted.
-    # @param: "**options": "name": List of strings to replace column names from sql table according to order of "*columns".
-    '''
-    def getRelationCol(self, table, relation, columns, **options):
-        session = orm.Session(bind=engine)
-        query = session.query(table).all()
-        table = {x: [] for x in columns}
-
-
+        # Iterate through each job, and add to list of dictionaries
+        # (Note that adding to list of dict, then creating a dataframe from it is faster than using append)
+        rowLists = []
         for row in query:
-            linkTable = getattr(row, relation)
-            for column in columns:
-                if linkTable is not None:
-                    table[column].append(getattr(linkTable, column))
-                else:
-                    table[column].append(None)
+            # Create empty dict
+            rowDict = {}
+            # Update row dict with columns from jobs table
+            rowDict.update({"id":row.id, "job_type":row.rJob_type.label, "hazards":row.rHazards.label,
+                            "status":row.rStatus.label, "man_hours":row.man_hours, "pph":row.pph,
+                            "consumables":row.consumables, "completed_time":row.completed_time,
+                            "created_at":row.created_at})
 
-        session.close()
+            # Update row dict with columns from internal table if applicable
+            internal = row.rInternal
+            if internal != None:
+                rowDict.update({"internal":True, "building_id":internal.rBuilding.label, "staff_type_id":internal.rStaffType.label,
+                                "school_id":internal.rSchool.label, "booked_by_username": internal.booked_by,
+                                "booked_by_first_name": internal.rBookedBy.first_name, "booked_by_last_name": internal.rBookedBy.last_name,
+                                "booked_by_school_id":internal.rBookedBy.rSchoolId.label})
+            else: rowDict.update({"internal":False})
 
-        if options.get("name") is None:
-            return table
-        else:
-            for index, key in enumerate(list(table.keys())):
-                table[options.get("name")[index]] = table.pop(key)
-            return table
+            # Update row dict with columns from external table if applicable
+            external = row.rExternal
+            if external != None:
+                rowDict.update({"external": True, "company_name":external.rCompany.company_name,
+                                "company_address":external.rCompany.company_address})
+            else:
+                rowDict.update({"external": False})
+
+            # Update row dict with columns from standardjobtype table if applicable
+            standardjobtype = row.rStandardJobType
+            if standardjobtype != None:
+                rowDict.update({"standardjobtype": True, "equitment":standardjobtype.equitment,
+                                "assigned_user_username":standardjobtype.rAssignedUser.username,
+                                "assigned_user_first_name":standardjobtype.rAssignedUser.first_name,
+                                "assigned_user_last_name":standardjobtype.rAssignedUser.last_name,
+                                "location":standardjobtype.rLocation.label})
+            else:
+                rowDict.update({"standardjobtype": False})
+
+            # Update row dict with columns from designjobtype table if applicable
+            designjobtype = row.rDesignJobType
+            if designjobtype != None:
+                rowDict.update({"designjobtype": True, "title":designjobtype.title,
+                                "design_user_username":designjobtype.rDesignUser.username,
+                                "design_user_first_name":designjobtype.rDesignUser.first_name,
+                                "design_user_last_name":designjobtype.rDesignUser.last_name,
+                                "constructor_user_username": designjobtype.rConstructorUser.username,
+                                "constructor_user_first_name": designjobtype.rConstructorUser.first_name,
+                                "constructor_user_last_name": designjobtype.rConstructorUser.last_name})
+            else:
+                rowDict.update({"designjobtype": False})
+
+            # Append rowDict to the list of dicts
+            rowLists.append(rowDict)
+
+        # Create dataframe based on dict
+        self.mJobs = pd.DataFrame(rowLists)
+        # Sort the dataframe based on the job id
+        self.mJobs.sort_values(by=['id'], ascending=True, inplace=True)
+        # Set the job id as the index
+        self.mJobs.set_index('id', inplace=True)
+
+        return
 
     mJobs = None

@@ -19,9 +19,10 @@ class Controller:
     def __init__(self, pres):
         # Store presenter @todo: maybe remove variable and just store table
         self.mPres = pres
-        # Add filters
+        # Add filters (we use greater than filter as ew assume that no job takes less than 1 hour to complete)
         self.mPres.addFilters({"Equals": [["internal", True], ["standardjobtype", True]],
-                               "Date": [["createdAt", "2016-1-1", "2018-5-6"]]})
+                               "Date": [["createdAt", "2016-1-1", "2018-5-6"]],
+                               "GreaterThan": [["manHours", 0]]})
         # Read json config file
         with open("ReportOne/config.json") as f:
             config = json.load(f)
