@@ -9,10 +9,11 @@ import numpy as np
 # Graph library
 import matplotlib.pyplot as plt
 
-
-
 ## Presenter
 from Presenter import Presenter as pres
+
+##@todo:delete
+import pylatex as pyl
 
 
 class Controller:
@@ -50,7 +51,30 @@ class Controller:
 
         print(uniqueSchools)
         axes = self.mTable.boxplot(column=["manHours"], by="school",rot=10,return_type="axes")
-        plt.show()
+        # plt.show()
+
+        print(self.mTable)
+        print(self.mTable.manHours[self.mTable.school == "Department Of Chemistry"])
+
+        geometry_options = {"right": "2cm", "left": "2cm"}
+        doc = pyl.Document(geometry_options=geometry_options, default_filepath="ReportOne/test")
+
+        doc.append('Introduction.')
+
+        with doc.create(pyl.Section('I am a section')):
+            doc.append('Take a look at this beautiful plot:')
+
+            with doc.create(pyl.Figure(position='htbp')) as plot:
+                plot.add_plot(width=pyl.NoEscape(r'1\textwidth'), dpi=300)
+                plot.add_caption('I am a caption.')
+
+            doc.append('Created using matplotlib.')
+
+        doc.append('Conclusion.')
+
+        doc.generate_pdf(clean=True)
+
+
         return
 
     mTable = None
