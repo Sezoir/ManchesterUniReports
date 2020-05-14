@@ -20,9 +20,9 @@ class Controller:
         # Store presenter @todo: maybe remove variable and just store table
         self.mPres = pres
         # Add filters (we use greater than filter as ew assume that no job takes less than 1 hour to complete)
-        self.mPres.addFilters({"Equals": [["internal", True], ["standardjobtype", True]],
-                               "Date": [["createdAt", "2016-1-1", "2018-5-6"]],
-                               "GreaterThan": [["manHours", 0]]})
+        self.mPres.addFilters({"Equals": [["internal", True]],
+                               "GreaterThan": [["manHours", 0]]}) #"Date": [["createdAt", "2010-12-14", "2018-5-6"]],, ["standardjobtype", True]
+
         # Read json config file
         with open("ReportOne/config.json") as f:
             config = json.load(f)
@@ -49,7 +49,7 @@ class Controller:
         self.mTable.dropna(axis=0, subset=["manHours"], inplace=True)
 
         print(uniqueSchools)
-        self.mTable.boxplot(column=["manHours"], by="school")
+        axes = self.mTable.boxplot(column=["manHours"], by="school",rot=10,return_type="axes")
         plt.show()
         return
 

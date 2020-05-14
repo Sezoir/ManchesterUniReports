@@ -166,7 +166,7 @@ class Repository:
                                 "assigned_user_username":standardjobtype.rAssignedUser.username,
                                 "assigned_user_first_name":standardjobtype.rAssignedUser.first_name,
                                 "assigned_user_last_name":standardjobtype.rAssignedUser.last_name,
-                                "location":standardjobtype.rLocation.label})
+                                "location":standardjobtype.rLocation.label, "number_items":standardjobtype.number_items})
             else:
                 rowDict.update({"standardjobtype": False})
 
@@ -192,7 +192,10 @@ class Repository:
         self.mJobs.sort_values(by=['id'], ascending=True, inplace=True)
         # Set the job id as the index
         self.mJobs.set_index('id', inplace=True)
-
+        # Set any NaN types in the number_items column to 0
+        self.mJobs.loc[self.mJobs.number_items.isna(),"number_items"] = 0
+        # Clone any jobs based on the number_items @todo: change to not copy
+        self.mJobs = self.mJobs.loc[self.mJobs.index.repeat(self.mJobs.number_items)]
         return
 
     mJobs = None
