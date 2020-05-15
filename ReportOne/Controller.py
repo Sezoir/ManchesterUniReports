@@ -12,8 +12,13 @@ import matplotlib.pyplot as plt
 ## Presenter
 from Presenter import Presenter as pres
 
+## Toolbox
+# To create boxplot figures
+import Toolbox.BoxPlot as bxplt
+
 ##@todo:delete
 import pylatex as pyl
+
 
 
 class Controller:
@@ -38,9 +43,6 @@ class Controller:
     def create(self):
         uniqueSchools = pd.unique(self.mTable.school)
         cnt = self.mTable["school"].value_counts().to_dict()
-        print(type(cnt))
-        print(cnt)
-        print(cnt["Department Of Chemistry"])
         # Drop all schools with less than 15 jobs (stops clutter of schools, where there is not enough information)
         for school in uniqueSchools:
             if cnt[school] < 15:
@@ -49,12 +51,23 @@ class Controller:
         # Drop all jobs where man hours are N/A @todo: maybe include this in the Presenter class as an option
         self.mTable.dropna(axis=0, subset=["manHours"], inplace=True)
 
-        print(uniqueSchools)
         axes = self.mTable.boxplot(column=["manHours"], by="school",rot=10,return_type="axes")
         # plt.show()
 
         print(self.mTable)
-        print(self.mTable.manHours[self.mTable.school == "Department Of Chemistry"])
+        # print(self.mTable.manHours[self.mTable.school == "Department Of Chemistry"])
+        # for i, g in self.mTable.groupby("school"):
+        #     print(i,g)
+
+        test = bxplt.BoxPlot()
+        test.uniqueBoxplot(self.mTable.school, self.mTable.manHours)
+        test.draw()
+
+        test2 = bxplt.BoxPlot()
+        test2.uniqueBoxplot(self.mTable.school, self.mTable.manHours)
+        test2.draw()
+
+        test.draw()
 
         geometry_options = {"right": "2cm", "left": "2cm"}
         doc = pyl.Document(geometry_options=geometry_options, default_filepath="ReportOne/test")
