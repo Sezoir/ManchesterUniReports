@@ -6,6 +6,7 @@ Backup/
 test.py
 settings.ini
 ReportOne/config.json
-
+ReportOne/test.pdf
+ReportOne/report.pdf
 
 
