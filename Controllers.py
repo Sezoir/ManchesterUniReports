@@ -16,13 +16,20 @@ class Controllers:
     def __init__(self):
         # Create/store presenter
         self.mPres = pres.Presenter()
-        # Create the first report
-        report = cntrOne.Controller(self.mPres)
-        # Create report
-        report.create()
-        # Clear filter and first report is done, ready for the next report
-        self.mPres.clearFilters()
+        # Create ReportOne
+        self.report(cntrOne.Controller)
 
+        return
+
+    def report(self, reportController):
+        # Create the report
+        report = reportController(self.mPres)
+        # Create pdf report
+        report.create()
+        # Delete report class
+        del report
+        # Clear filter on Presenter
+        self.mPres.clearFilters()
         return
 
 

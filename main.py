@@ -1,13 +1,14 @@
+## Import project classes for testing
 from Repository import Repository as repo
 from Presenter import Presenter as pres
 from Presenter import Equals as propFil
 import Controllers as contr
 
+## Record time
 import time as time
 
+## Record memory usage
 import tracemalloc
-
-import Backup.RepositoryOld as repo2
 
 ## Math libraries
 # Data frames
@@ -17,7 +18,14 @@ import numpy as np
 
 def main():
     # Test reports
+    tracemalloc.start()
+    t = time.time()
     cons = contr.Controllers()
+    elapsed = time.time() - t
+    print(elapsed)
+    current, peak = tracemalloc.get_traced_memory()
+    print(f"Current memory usage is {current / 10 ** 6}MB; Peak was {peak / 10 ** 6}MB")
+    tracemalloc.stop()
 
     # Test Presenter class with filters
     # prest = pres.Presenter()
@@ -46,16 +54,6 @@ def main():
     # tracemalloc.stop()
     #
     # del re
-
-    # tracemalloc.start()
-    # t = time.time()
-    # re = repo2.Repository()
-    # elapsed = time.time() - t
-    # print(elapsed)
-    # print(re.mJobs)
-    # current, peak = tracemalloc.get_traced_memory()
-    # print(f"Current memory usage is {current / 10 ** 6}MB; Peak was {peak / 10 ** 6}MB")
-    # tracemalloc.stop()
 
 
     return
