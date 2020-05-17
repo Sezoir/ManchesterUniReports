@@ -31,14 +31,14 @@ class BoxPlot:
         self.mData = data
         return
 
-    def draw(self):
+    def draw(self, *, outlier=True, title=""):
         # Clear any previous figures
         plt.close()
         # Create new figure and axes
         fig, axes = plt.subplots()
         # Plot graph
-        axes.set_title('Multiple Samples with Different sizes')
-        axes.boxplot(x=self.mData, labels=self.mLabels)
+        axes.set_title(title)
+        axes.boxplot(x=self.mData, labels=self.mLabels, showfliers=outlier)
         # Adjust boundary spacing of graph
         plt.tight_layout()
         # Add grid
