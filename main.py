@@ -17,6 +17,11 @@ import pandas as pd
 import numpy as np
 
 def main():
+    # Set properties of console for pandas
+    desired_width = 320
+    pd.set_option('display.width', desired_width)
+    pd.set_option('display.max_columns', 5)
+
     # Test reports
     tracemalloc.start()
     t = time.time()

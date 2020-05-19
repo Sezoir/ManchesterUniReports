@@ -58,12 +58,24 @@ class Controller:
         print(self.mTable)
 
         # Create boxplot class, and pass in columns/categories for plotting
-        test = bxplt.BoxPlot()
-        test.uniqueBoxplot(self.mTable.school, self.mTable.manHours)
-        # test.draw()
+        plot = bxplt.BoxPlot()
+        plot.uniqueBoxplot(self.mTable.school, self.mTable.manHours)
 
+        # Get mean, lower quartile, median, upper quartile
+        # Create lower/upper lambda funcs
+        lowQuartile = lambda x: x.quantile(0.25)
+        lowQuartile.__name__ = "lower quartile"
+        uppQuartile = lambda x: x.quantile(0.75)
+        uppQuartile.__name__ = "upper quartile"
+        statistics = self.mTable.groupby("school")["manHours"].agg(["mean", lowQuartile, "median", uppQuartile])
+        print(statistics)
+
+        # Create view
         view = vw.View()
-        view.updatePlots({"boxSchoolManHours": test})
+        # Update view class with statistical results
+        view.updatePlots({"boxSchoolManHours": plot,
+                          "statistics": statistics})
+        # Create pdf
         view.createPDF()
         return
 
