@@ -13,6 +13,9 @@ class ViewBase:
         geometry_options = {"right": "2cm", "left": "2cm"}
         # Create document
         self.mDoc = pyl.Document(geometry_options=geometry_options, default_filepath=path+"/report")
+        # Declare packages
+        self.mDoc.add_color("LightGray", "rgb", "0.83, 0.83, 0.83")
+        self.mDoc.add_color("DarkGray", "rgb", "0.66, 0.66, 0.66")
         return
 
     # Update the bank with data to be used for pdf creation
@@ -45,10 +48,16 @@ class ViewBase:
         # Create long table (note we want string as longtable parameter in form "l l l ..." for each column)
         with doc.create(pyl.LongTable(" ".join(["l" for x in range(clnCount)]))) as table:
             table.add_hline()
-            table.add_row([dataframe.index.name] + list(dataframe.columns))
+            table.add_row([dataframe.index.name] + list(dataframe.columns), color="DarkGray")
             table.add_hline()
-            for ind in dataframe.index:
-                table.add_row([ind] + list(dataframe.loc[ind]))
+            for ind in range(len(dataframe)):
+                # Add alternating color to each row
+                if ind%2 == 0:
+                    table.add_row([dataframe.index[ind]] + list(dataframe.iloc[ind]))
+                else:
+                    table.add_row([dataframe.index[ind]] + list(dataframe.iloc[ind]), color="LightGray")
+            # for ind in dataframe.index:
+            #     table.add_row([ind] + list(dataframe.loc[ind]))
         return
 
     # A data bank, which stores reference to data results to be shown from the Controller
