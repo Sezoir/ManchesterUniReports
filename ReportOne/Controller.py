@@ -40,10 +40,22 @@ class Controller:
         # We use fuzzy to standardise the school names (for example all of chemistry comes
         # under "Department of Chemistry")
         self.mTable = self.mPres.getTable(["school", "manHours"], fuzzy=config)
-        # print(self.mTable)
         return
 
     def create(self):
+        # Drop all jobs where man hours are N/A @todo: maybe include this in the Presenter class as an option
+        self.mTable.dropna(axis=0, subset=["manHours"], inplace=True)
+
+        # Get mean, lower quartile, median, upper quartile
+        # Create lower/upper lambda funcs
+        lowQuartile = lambda x: x.quantile(0.25)
+        lowQuartile.__name__ = "lower quartile"
+        uppQuartile = lambda x: x.quantile(0.75)
+        uppQuartile.__name__ = "upper quartile"
+        statistics = self.mTable.groupby("school")["manHours"].agg(
+            ["count", "mean", lowQuartile, "median", uppQuartile])
+        # print(statistics)
+
         # Get all unique school names
         uniqueSchools = pd.unique(self.mTable.school)
         cnt = self.mTable["school"].value_counts().to_dict()
@@ -52,23 +64,11 @@ class Controller:
             if cnt[school] < 15:
                 self.mTable.drop(index=self.mTable.index[self.mTable.school == school], axis=0, inplace=True)
 
-        # Drop all jobs where man hours are N/A @todo: maybe include this in the Presenter class as an option
-        self.mTable.dropna(axis=0, subset=["manHours"], inplace=True)
-
         print(self.mTable)
 
         # Create boxplot class, and pass in columns/categories for plotting
         plot = bxplt.BoxPlot()
         plot.uniqueBoxplot(self.mTable.school, self.mTable.manHours)
-
-        # Get mean, lower quartile, median, upper quartile
-        # Create lower/upper lambda funcs
-        lowQuartile = lambda x: x.quantile(0.25)
-        lowQuartile.__name__ = "lower quartile"
-        uppQuartile = lambda x: x.quantile(0.75)
-        uppQuartile.__name__ = "upper quartile"
-        statistics = self.mTable.groupby("school")["manHours"].agg(["mean", lowQuartile, "median", uppQuartile])
-        print(statistics)
 
         # Create view
         view = vw.View()

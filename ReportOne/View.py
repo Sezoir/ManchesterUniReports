@@ -14,24 +14,32 @@ import matplotlib.pyplot as plt
 
 class View(vwbs.ViewBase):
     def __init__(self):
+        # Set init parameters of parent class
         super().__init__("ReportOne")
+        # Initialise data bank
         self.mBank = {
-            "boxSchoolManHours": None
+            "boxSchoolManHours": None,
+            "statistics": None
         }
-        print("Done")
         return
 
+    # Creates the pdf file
     def createPDF(self):
-        self.mDoc.append('Introduction.')
+        # Create section
+        with self.mDoc.create(pyl.Section("School statistics:")) as sec1:
+            # Add flavour text to section
+            sec1.append("The following are the statistics of the manHours of each job according to school:")
+            # Add long table of statistics to section
+            self.addTable(self.mDoc, self.mBank["statistics"])
 
-        with self.mDoc.create(pyl.Section('I am a section')):
-            self.mDoc.append('Take a look at this beautiful plot:')
-
-            self.addGraph(self.mDoc, "boxSchoolManHours", ylim=(0,80),title="Schools against manHours with outliers")
+        # Create section
+        with self.mDoc.create(pyl.Section("School against manHours")) as sec2:
+            # Add flavour text to section
+            sec2.append("These boxplots show the spread of the manHours for each school who have booked over 15 jobs.")
+            # Add two boxplots to the section, where one shows the outliers and the other doesnt
+            self.addGraph(self.mDoc, "boxSchoolManHours", ylim=(0, 80), title="Schools against manHours with outliers")
             self.addGraph(self.mDoc, "boxSchoolManHours", outlier=False, title="Schools against manHours without outliers")
-            self.mDoc.append('Created using matplotlib.')
 
-        self.mDoc.append('Conclusion.')
-
+        # Generate the pdf, and clean the latex files afterwards
         self.mDoc.generate_pdf(clean=True)
         return
