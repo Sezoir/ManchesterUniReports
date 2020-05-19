@@ -73,7 +73,7 @@ class Controller:
         # Create view
         view = vw.View()
         # Update view class with statistical results
-        view.updatePlots({"boxSchoolManHours": plot,
+        view.updateBank({"boxSchoolManHours": plot,
                           "statistics": statistics})
         # Create pdf
         view.createPDF()

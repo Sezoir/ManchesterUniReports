@@ -1,3 +1,6 @@
+## Base class
+import ViewBase as vwbs
+
 ## Toolbox
 # To store boxplot figures
 import Toolbox.BoxPlot as bxplt
@@ -9,47 +12,26 @@ import pylatex as pyl
 import matplotlib.pyplot as plt
 
 
-class View:
+class View(vwbs.ViewBase):
     def __init__(self):
-        self.mPlots = {
+        super().__init__("ReportOne")
+        self.mBank = {
             "boxSchoolManHours": None
         }
-        return
-
-    def updatePlots(self, plotDict):
-        self.mPlots.update(plotDict)
+        print("Done")
         return
 
     def createPDF(self):
-        geometry_options = {"right": "2cm", "left": "2cm"}
-        doc = pyl.Document(geometry_options=geometry_options, default_filepath="ReportOne/test")
+        self.mDoc.append('Introduction.')
 
-        doc.append('Introduction.')
+        with self.mDoc.create(pyl.Section('I am a section')):
+            self.mDoc.append('Take a look at this beautiful plot:')
 
-        with doc.create(pyl.Section('I am a section')):
-            doc.append('Take a look at this beautiful plot:')
+            self.addGraph(self.mDoc, "boxSchoolManHours", ylim=(0,80),title="Schools against manHours with outliers")
+            self.addGraph(self.mDoc, "boxSchoolManHours", outlier=False, title="Schools against manHours without outliers")
+            self.mDoc.append('Created using matplotlib.')
 
-            self.addGraph(doc, "boxSchoolManHours", ylim=(0,80),title="Schools against manHours with outliers")
-            self.addGraph(doc, "boxSchoolManHours", outlier=False, title="Schools against manHours without outliers")
-            doc.append('Created using matplotlib.')
+        self.mDoc.append('Conclusion.')
 
-        doc.append('Conclusion.')
-
-        doc.generate_pdf(clean=True)
+        self.mDoc.generate_pdf(clean=True)
         return
-
-    # Add a graph to the document
-    # @todo: change to allow flexible pylatex parameters (probably using dict)
-    def addGraph(self, doc, plotName, *, ylim=(), **graphOptions):
-        # Attempt to create figure
-        with doc.create(pyl.Figure(position='htbp')) as plot:
-            # Plot graph
-            self.mPlots[plotName].draw(**graphOptions)
-            # Matplotlib axes options
-            if ylim != ():
-                plt.ylim(ylim)
-            # Add plot to document
-            plot.add_plot(width=pyl.NoEscape(r'1\textwidth'), dpi=300)
-        return
-
-    mPlots = None
