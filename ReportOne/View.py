@@ -8,6 +8,9 @@ import Toolbox.BoxPlot as bxplt
 ## PDF creator
 import pylatex as pyl
 
+## Pylatex external packages support
+import LaTeX.Lscape as pyle
+
 # Graph library
 import matplotlib.pyplot as plt
 
@@ -30,15 +33,15 @@ class View(vwbs.ViewBase):
             # Add flavour text to section
             sec1.append("The following are the statistics of the manHours of each job according to school:")
             # Add long table of statistics to section
-            self.addTable(self.mDoc, self.mBank["statistics"], subxlabel={"#":["count"], "Hours":["mean", "lower quartile", "median", "upper quartile"]})
+            self.addTable(sec1, self.mBank["statistics"], subxlabel={"#":["count"], "Hours":["mean", "lower quartile", "median", "upper quartile"]})
 
         # Create section
         with self.mDoc.create(pyl.Section("School against manHours")) as sec2:
             # Add flavour text to section
             sec2.append("These boxplots show the spread of the manHours for each school who have booked over 15 jobs.")
             # Add two boxplots to the section, where one shows the outliers and the other doesnt
-            self.addGraph(self.mDoc, "boxSchoolManHours", ylim=(0, 80), title="Schools against manHours with outliers")
-            self.addGraph(self.mDoc, "boxSchoolManHours", outlier=False, title="Schools against manHours without outliers")
+            self.addGraph(sec2, "boxSchoolManHours", ylim=(0, 80), title="Schools against manHours with outliers")
+            self.addGraph(sec2, "boxSchoolManHours", outlier=False, title="Schools against manHours without outliers")
 
         # Generate the pdf, and clean the latex files afterwards
         self.mDoc.generate_pdf(clean=True)

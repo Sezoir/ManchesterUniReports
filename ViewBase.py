@@ -13,12 +13,18 @@ class ViewBase:
         geometry_options = \
             {
                 "landscape": True,
-                "right": "2cm",
-                "left": "2cm"
+                "heightrounded": True,
+                "a4paper": True,
+                "top": "10mm",
+                "bottom": "10mm",
+                "right": "15mm",
+                "left": "15mm"
             }
+
         # Create document
         self.mDoc = pyl.Document(geometry_options=geometry_options, default_filepath=path+"/report")
         # Declare packages
+        # self.mDoc.packages.append(pyl.Package("lscape", options="pdftex"))
         self.mDoc.add_color("LightGray", "rgb", "0.83, 0.83, 0.83")
         self.mDoc.add_color("DarkGray", "rgb", "0.66, 0.66, 0.66")
         return
@@ -61,6 +67,7 @@ class ViewBase:
             table.add_hline()
             table.add_row(order, color="DarkGray")
             table.add_hline()
+            table.end_table_header()
             # Insert the data row by row
             for ind in range(len(dataframe)):
                 # Add alternating color to each row
