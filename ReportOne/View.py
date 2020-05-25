@@ -30,7 +30,7 @@ class View(vwbs.ViewBase):
             # Add flavour text to section
             sec1.append("The following are the statistics of the manHours of each job according to school:")
             # Add long table of statistics to section
-            self.addTable(self.mDoc, self.mBank["statistics"])
+            self.addTable(self.mDoc, self.mBank["statistics"], subxlabel={"#":["count"], "Hours":["mean", "lower quartile", "median", "upper quartile"]})
 
         # Create section
         with self.mDoc.create(pyl.Section("School against manHours")) as sec2:
