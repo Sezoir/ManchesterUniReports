@@ -56,9 +56,8 @@ class Presenter:
         if not fuzzy:
             return self._mTable.loc[self._mFilTable, columns]
         table = self._mTable.loc[self._mFilTable, columns]
-        for column in fuzzy:
-            for school in fuzzy[column]:
-                table = table.replace({column: fuzzy[column][school]}, school)
+        for school in fuzzy:
+            table = table.replace({"school": fuzzy[school]}, school)
         return table
 
     # Rename the columns to follow camelCase for consistency.

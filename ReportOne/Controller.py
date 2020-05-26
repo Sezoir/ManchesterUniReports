@@ -34,12 +34,12 @@ class Controller:
 
         # Read json config file
         with open("ReportOne/config.json") as f:
-            config = json.load(f)
+            self.mConfig = json.load(f)
 
         # Get/store table, with selected columns
         # We use fuzzy to standardise the school names (for example all of chemistry comes
         # under "Department of Chemistry")
-        self.mTable = self.mPres.getTable(["school", "manHours"], fuzzy=config)
+        self.mTable = self.mPres.getTable(["school", "manHours"], fuzzy=self.mConfig["school"])
         return
 
     def create(self):
@@ -64,20 +64,21 @@ class Controller:
             if cnt[school] < 15:
                 self.mTable.drop(index=self.mTable.index[self.mTable.school == school], axis=0, inplace=True)
 
-        print(self.mTable)
-
         # Create boxplot class, and pass in columns/categories for plotting
         plot = bxplt.BoxPlot()
         plot.uniqueBoxplot(self.mTable.school, self.mTable.manHours)
 
         # Create view
         view = vw.View()
-        # Update view class with statistical results
-        view.updateBank({"boxSchoolManHours": plot,
-                          "statistics": statistics})
+        # Update view class config
+        view.updateBank({
+            "table": self.mConfig["table"],
+            "boxSchoolManHours": plot,
+            "statistics": statistics})
         # Create pdf
         view.createPDF()
         return
 
     mTable = None
     mPres = None
+    mConfig = None
