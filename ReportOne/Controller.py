@@ -48,28 +48,43 @@ class Controller:
         # Drop all jobs where man hours are N/A @todo: maybe include this in the Presenter class as an option
         self.mTable.dropna(axis=0, subset=["manHours"], inplace=True)
 
-        # Get mean, lower quartile, median, upper quartile
-        stats = Statistics.Statistics()
-        statistics = stats.getGroupedStats(self.mTable, "school", "manHours")
+        # View config
+        vConfig = {
+            "statistics": [],
+            "graphs": []
+        }
 
-        # Filter out all schools with less than 15 jobs total (to stop clutter of school, where there is not enough
-        # information to show on graph.
-        filt = Filtering.Filtering()
-        filt.cntDrop(self.mTable, "school", 15)
+        # Loop through each date
+        for package in self.mConfig["data"]:
+            # Get table within date period from config
+            self.mPres.clearFilters()
+            self.mPres.addFilters({"Equals": [["internal", True]],
+                                   "GreaterThan": [["manHours", 0]],
+                                   "Date": [["createdAt", package["dateBegin"], package["dateEnd"]]]})
+            self.mTable = self.mPres.getTable(["school", "manHours"], fuzzy=self.mConfig["school"])
 
-        # Create boxplot class, and pass in columns/categories for plotting
-        plot = bxplt.BoxPlot()
-        plot.uniqueBoxplot(self.mTable.school, self.mTable.manHours)
+            # Get mean, lower quartile, median, upper quartile
+            stats = Statistics.Statistics()
+            vConfig["statistics"].append(stats.getGroupedStats(self.mTable, "school", "manHours"))
+
+            # Filter out all schools with less than 15 jobs total (to stop clutter of school, where there is not enough
+            # information to show on graph.
+            filt = Filtering.Filtering()
+            filt.cntDrop(self.mTable, "school", package["minimumCount"])
+
+            # Create boxplot class, and pass in columns/categories for plotting
+            plot = bxplt.BoxPlot()
+            plot.uniqueBoxplot(self.mTable.school, self.mTable.manHours)
+            vConfig["graphs"].append(plot)
 
         # Create view
-        view = vw.View()
-        # Update view class config
-        view.updateBank({
-            "table": self.mConfig["table"],
-            "boxSchoolManHours": plot,
-            "statistics": statistics})
-        # Create pdf
-        view.createPDF()
+        # view = vw.View()
+        # # Update view class config
+        # view.updateBank({
+        #     "boxSchoolManHours": plot,
+        #     "statistics": statistics})
+        # # Create pdf
+        # view.createPDF()
         return
 
     mTable = None
