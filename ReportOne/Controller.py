@@ -15,6 +15,8 @@ from Presenter import Presenter as pres
 ## Toolbox
 # To create boxplot figures
 import Toolbox.BoxPlot as bxplt
+# Get general statistics
+from Toolbox import Statistics
 
 ## View class
 from ReportOne import View as vw
@@ -47,14 +49,8 @@ class Controller:
         self.mTable.dropna(axis=0, subset=["manHours"], inplace=True)
 
         # Get mean, lower quartile, median, upper quartile
-        # Create lower/upper lambda funcs
-        lowQuartile = lambda x: x.quantile(0.25)
-        lowQuartile.__name__ = "lower quartile"
-        uppQuartile = lambda x: x.quantile(0.75)
-        uppQuartile.__name__ = "upper quartile"
-        statistics = self.mTable.groupby("school")["manHours"].agg(
-            ["count", "mean", lowQuartile, "median", uppQuartile])
-        # print(statistics)
+        stats = Statistics.Statistics()
+        statistics = stats.getGroupedStats(self.mTable, "school", "manHours")
 
         # Get all unique school names
         uniqueSchools = pd.unique(self.mTable.school)
