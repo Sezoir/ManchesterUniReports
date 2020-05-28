@@ -15,8 +15,8 @@ from Presenter import Presenter as pres
 ## Toolbox
 # To create boxplot figures
 import Toolbox.BoxPlot as bxplt
-# Get general statistics
-from Toolbox import Statistics
+# Get general statistics and filtering
+from Toolbox import Statistics, Filtering
 
 ## View class
 from ReportOne import View as vw
@@ -52,13 +52,10 @@ class Controller:
         stats = Statistics.Statistics()
         statistics = stats.getGroupedStats(self.mTable, "school", "manHours")
 
-        # Get all unique school names
-        uniqueSchools = pd.unique(self.mTable.school)
-        cnt = self.mTable["school"].value_counts().to_dict()
-        # Drop all schools with less than 15 jobs (stops clutter of schools, where there is not enough information)
-        for school in uniqueSchools:
-            if cnt[school] < 15:
-                self.mTable.drop(index=self.mTable.index[self.mTable.school == school], axis=0, inplace=True)
+        # Filter out all schools with less than 15 jobs total (to stop clutter of school, where there is not enough
+        # information to show on graph.
+        filt = Filtering.Filtering()
+        filt.cntDrop(self.mTable, "school", 15)
 
         # Create boxplot class, and pass in columns/categories for plotting
         plot = bxplt.BoxPlot()
