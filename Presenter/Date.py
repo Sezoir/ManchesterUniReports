@@ -20,8 +20,6 @@ class Date:
             table.update(pd.to_datetime(table[self.mKey]))
         except Exception as e:
             print("Cannot convert to datetime in class Date: ", e.args[0])
-
-        # table.loc[:, self.mKey] = pd.to_datetime(table[self.mKey])
         # Create column of true booleans
         mask = [True for x in table.index]
         # Check whether to use a start date

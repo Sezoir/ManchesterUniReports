@@ -39,11 +39,10 @@ def main():
     # Test Presenter class with filters
     # prest = pres.Presenter()
     # prest.addFilters({"Equals": [["internal", True], ["standardjobtype", True]]})
-    # prest.addFilters({"Date": [["created_at", "2016-1-1", "2018-5-6"]]})
+    # prest.addFilters({"Date": [["createdAt", "2016-1-1", "2018-5-6"]]})
     # prest.addFilters({"Equals": [["internal", True], ["standardjobtype", True]],
-    #                   "Date": [["created_at", "2016-1-1", "2018-5-6"]]})
-    # print(prest.getTable(["school", "man_hours"]))
-
+    #                   "Date": [["createdAt", "2016-1-1", "2018-5-6"]]})
+    # print(prest.getTable(["school", "manHours"]))
 
     return
 

@@ -21,27 +21,24 @@ class View(vwbs.ViewBase):
         super().__init__("ReportOne")
         # Initialise data bank
         self.mBank = {
-            "boxSchoolManHours": None,
-            "statistics": None
+            "graphs": None,
+            "statistics": None,
+            "dateBegin": [],
+            "dateEnd": []
         }
         return
 
     # Creates the pdf file
     def createPDF(self):
-        # Create section
-        with self.mDoc.create(pyl.Section("School statistics:")) as sec1:
-            # Add flavour text to section
-            sec1.append("The following are the statistics of the manHours of each job according to school:")
-            # Add long table of statistics to section
-            self.addTable(sec1, self.mBank["statistics"], subxlabel={"#":["count"], "Hours":["mean", "lower quartile", "median", "upper quartile"]})
-
-        # Create section
-        with self.mDoc.create(pyl.Section("School against manHours")) as sec2:
-            # Add flavour text to section
-            sec2.append("These boxplots show the spread of the manHours for each school who have booked over 15 jobs.")
-            # Add two boxplots to the section, where one shows the outliers and the other doesnt
-            self.addGraph(sec2, "boxSchoolManHours", ylim=(0, 80), title="Schools against manHours with outliers")
-            self.addGraph(sec2, "boxSchoolManHours", outlier=False, title="Schools against manHours without outliers")
+        # Loop through each pacakage
+        for ind in range(len(self.mBank["dateEnd"])):
+            # Create section
+            with self.mDoc.create(pyl.Section(self.mBank["dateBegin"][ind]+" - "+self.mBank["dateEnd"][ind])) as sec:
+                # Add long table of statistics to section
+                self.addTable(sec, self.mBank["statistics"][ind], subxlabel={"#":["count"], "Hours":["mean", "lower quartile", "median", "upper quartile"]})
+                self.addGraph(sec, self.mBank["graphs"][ind], ylim=(0, 80), title="Schools against manHours")
+            # Append new page after table/graph
+            self.mDoc.append(pyl.NewPage())
 
         # Generate the pdf, and clean the latex files afterwards
         self.mDoc.generate_pdf(clean=True)

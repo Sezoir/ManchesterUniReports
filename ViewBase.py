@@ -4,6 +4,9 @@ import pylatex as pyl
 ## Graph library
 import matplotlib.pyplot as plt
 
+# Get os lib
+import os
+
 # Base class for any View class made in a report
 class ViewBase:
     def __init__(self, path):
@@ -15,7 +18,8 @@ class ViewBase:
                 "landscape": True,
                 "heightrounded": True,
                 "a4paper": True,
-                "top": "10mm",
+                "headheight": "10mm",
+                "tmargin": "15mm",
                 "bottom": "10mm",
                 "right": "15mm",
                 "left": "15mm"
@@ -25,8 +29,24 @@ class ViewBase:
         self.mDoc = pyl.Document(geometry_options=geometry_options, default_filepath=path+"/report")
         # Declare packages
         # self.mDoc.packages.append(pyl.Package("lscape", options="pdftex"))
+        self.mDoc.packages.append(pyl.Package("float"))
         self.mDoc.add_color("LightGray", "rgb", "0.83, 0.83, 0.83")
         self.mDoc.add_color("DarkGray", "rgb", "0.66, 0.66, 0.66")
+        # Create header
+        header = pyl.PageStyle("header")
+        # Create left header
+        with header.create(pyl.Head("L")) as leftHeader:
+            with leftHeader.create(pyl.MiniPage(width=pyl.NoEscape(r"0.7\textwidth"), pos="c")) as logoWrapper:
+                logoWrapper.append(pyl.StandAloneGraphic(image_options="width=120px", filename="../Images/logo.png"))
+
+        # Create right header
+        with header.create(pyl.Head("R")):
+            header.append("Electronics Department")
+
+        # Append header to document
+        self.mDoc.preamble.append(header)
+        self.mDoc.change_document_style("header")
+
         return
 
     # Update the bank with data to be used for pdf creation
@@ -37,16 +57,16 @@ class ViewBase:
 
     # Add a graph to the document
     # @todo: change to allow flexible pylatex parameters (probably using dict)
-    def addGraph(self, doc, plotName, *, ylim=(), **graphOptions):
+    def addGraph(self, doc, graph, *, ylim=(), **graphOptions):
         # Attempt to create figure
-        with doc.create(pyl.Figure(position='htbp')) as plot:
+        with doc.create(pyl.Figure(position="H")) as plot:
             # Plot graph
-            self.mBank[plotName].draw(**graphOptions)
+            graph.draw(**graphOptions)
             # Matplotlib axes options
             if ylim != ():
                 plt.ylim(ylim)
             # Add plot to document
-            plot.add_plot(width=pyl.NoEscape(r'1\textwidth'), dpi=300)
+            plot.add_plot(width=pyl.NoEscape(r"0.9\textwidth"), dpi=300)
         return
 
     # Takes a dataframe and adds a multirow table to the document
@@ -85,8 +105,6 @@ class ViewBase:
         order = []
         order += unlabelled
         order += [y for x in subcolumns.values() for y in x]
-        # Add hline
-        # table.add_hline()
         # Create empty list for storing the multicolumns
         multiCol = []
         # Add multicolumn for the index and columns with no sublabel

@@ -51,7 +51,9 @@ class Controller:
         # View config
         vConfig = {
             "statistics": [],
-            "graphs": []
+            "graphs": [],
+            "dateBegin": [],
+            "dateEnd": []
         }
 
         # Loop through each date
@@ -77,14 +79,16 @@ class Controller:
             plot.uniqueBoxplot(self.mTable.school, self.mTable.manHours)
             vConfig["graphs"].append(plot)
 
+            # Add date range to view config
+            vConfig["dateBegin"].append(package["dateBegin"])
+            vConfig["dateEnd"].append(package["dateEnd"])
+
         # Create view
-        # view = vw.View()
-        # # Update view class config
-        # view.updateBank({
-        #     "boxSchoolManHours": plot,
-        #     "statistics": statistics})
-        # # Create pdf
-        # view.createPDF()
+        view = vw.View()
+        # Update view class config
+        view.updateBank(vConfig)
+        # Create pdf
+        view.createPDF()
         return
 
     mTable = None
