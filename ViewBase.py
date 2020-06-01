@@ -41,7 +41,7 @@ class ViewBase:
 
         # Create right header
         with header.create(pyl.Head("R")):
-            header.append("Electronics Department")
+            header.append("Electronics Workshop")
 
         # Append header to document
         self.mDoc.preamble.append(header)

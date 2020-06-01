@@ -127,9 +127,6 @@ class Repository:
         # Query for all jobs which have been successfully completed (that is not deleted, and not ongoing)
         query = session.query(Jobs).filter(db.and_(Jobs.completed_time.isnot(None), Jobs.deleted_at.is_(None))).all()
 
-        # for row in query:
-        #     print(row.id)
-
         # Iterate through each job, and add to list of dictionaries
         # (Note that adding to list of dict, then creating a dataframe from it is faster than using append)
         rowLists = []
@@ -189,11 +186,11 @@ class Repository:
         # Create dataframe based on dict
         self.mJobs = pd.DataFrame(rowLists)
         # Sort the dataframe based on the job id
-        self.mJobs.sort_values(by=['id'], ascending=True, inplace=True)
+        self.mJobs.sort_values(by=["id"], ascending=True, inplace=True)
         # Set the job id as the index
-        self.mJobs.set_index('id', inplace=True)
+        self.mJobs.set_index("id", inplace=True)
         # Set any NaN types in the number_items column to 0
-        self.mJobs.loc[self.mJobs.number_items.isna(),"number_items"] = 0
+        self.mJobs.loc[self.mJobs.number_items.isna(), "number_items"] = 1
         # Clone any jobs based on the number_items @todo: change to not copy
         self.mJobs = self.mJobs.loc[self.mJobs.index.repeat(self.mJobs.number_items)]
         return

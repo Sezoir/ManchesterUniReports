@@ -33,7 +33,9 @@ class View(vwbs.ViewBase):
         # Loop through each pacakage
         for ind in range(len(self.mBank["dateEnd"])):
             # Create section
-            with self.mDoc.create(pyl.Section(self.mBank["dateBegin"][ind]+" - "+self.mBank["dateEnd"][ind])) as sec:
+            with self.mDoc.create(pyl.Section(self.mBank["dateBegin"][ind]+" - " + self.mBank["dateEnd"][ind])) as sec:
+                # Add description of table
+                sec.append("A table showing statistics of all jobs created between " + self.mBank["dateBegin"][ind]+" - "+self.mBank["dateEnd"][ind] + " arranged per school.")
                 # Add long table of statistics to section
                 self.addTable(sec, self.mBank["statistics"][ind], subxlabel={"#":["count"], "Hours":["mean", "lower quartile", "median", "upper quartile"]})
                 self.addGraph(sec, self.mBank["graphs"][ind], ylim=(0, 80), title="Schools against manHours")

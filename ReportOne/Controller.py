@@ -1,6 +1,8 @@
+## Python libs
 # Json lib
 import json as json
-
+# Date lib
+import datetime as dt
 ## Math libraries
 # Data frames
 import pandas as pd
@@ -55,7 +57,6 @@ class Controller:
             "dateBegin": [],
             "dateEnd": []
         }
-
         # Loop through each date
         for package in self.mConfig["data"]:
             # Get table within date period from config
@@ -63,7 +64,7 @@ class Controller:
             self.mPres.addFilters({"Equals": [["internal", True]],
                                    "GreaterThan": [["manHours", 0]],
                                    "Date": [["createdAt", package["dateBegin"], package["dateEnd"]]]})
-            self.mTable = self.mPres.getTable(["school", "manHours"], fuzzy=self.mConfig["school"])
+            self.mTable = self.mPres.getTable(["school", "manHours", "createdAt"], fuzzy=self.mConfig["school"])
 
             # Get mean, lower quartile, median, upper quartile
             stats = Statistics.Statistics()
@@ -80,8 +81,15 @@ class Controller:
             vConfig["graphs"].append(plot)
 
             # Add date range to view config
-            vConfig["dateBegin"].append(package["dateBegin"])
-            vConfig["dateEnd"].append(package["dateEnd"])
+            if package["dateBegin"] == "":
+                vConfig["dateBegin"].append(self.mTable.createdAt.min().date().strftime("%d/%m/%Y"))
+            else:
+                vConfig["dateBegin"].append(package["dateBegin"])
+
+            if package["dateEnd"] == "":
+                vConfig["dateEnd"].append(dt.date.today().strftime("%d/%m/%Y"))
+            else:
+                vConfig["dateEnd"].append(package["dateEnd"])
 
         # Create view
         view = vw.View()
