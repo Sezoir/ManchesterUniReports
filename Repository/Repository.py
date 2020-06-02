@@ -192,6 +192,8 @@ class Repository:
         # Set any NaN types in the number_items column to 0
         self.mJobs.loc[self.mJobs.number_items.isna(), "number_items"] = 1
         # Clone any jobs based on the number_items @todo: change to not copy
+        # Note we will divide any cloned job manHours by the amount of copies
+        self.mJobs["man_hours"] = np.where(self.mJobs["number_items"] < 2, self.mJobs["man_hours"], self.mJobs["man_hours"] / self.mJobs["number_items"])
         self.mJobs = self.mJobs.loc[self.mJobs.index.repeat(self.mJobs.number_items)]
         return
 
