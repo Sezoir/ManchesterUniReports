@@ -23,6 +23,9 @@ from Toolbox import Statistics, Filtering
 ## View class
 from ReportOne import View as vw
 
+# CntDrop filter (as we want to filter after we have got a "fuzzy" table)
+from Presenter import CntDrop as filt
+
 ##@todo:delete
 import pylatex as pyl
 
@@ -108,16 +111,14 @@ class Controller:
         stats = Statistics.Statistics()
         config["statistics"].append(stats.getGroupedStats(self.mTable, "school", "manHours"))
 
-        # Filter out all schools with less than 15 jobs total (to stop clutter of school, where there is not enough
+        # Filter out all schools with less than x jobs total (to stop clutter of school, where there is not enough
         # information to show on graph.
-        self.mPres.addFilters({"CntDrop": [["school", minimumCount]]})
-        self.mTable = self.mPres.getTable(["school", "manHours", "createdAt"], fuzzy=self.mConfig["school"])
-        # filt = Filtering.Filtering()
-        # filt.cntDrop(self.mTable, "school", minimumCount)
+        filter = filt.CntDrop(["school", minimumCount])
+        reducedTable = self.mTable.loc[filter.filter(self.mTable), :]
 
         # Create boxplot class, and pass in columns/categories for plotting
         plot = bxplt.BoxPlot()
-        plot.uniqueBoxplot(self.mTable.school, self.mTable.manHours)
+        plot.uniqueBoxplot(reducedTable.school, reducedTable.manHours)
         config["graphs"].append(plot)
         return
 
