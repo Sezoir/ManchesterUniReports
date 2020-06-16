@@ -59,37 +59,30 @@ class Controller:
         }
         # Loop through each date
         for package in self.mConfig["data"]:
-            # Get table within date period from config
-            self.mPres.clearFilters()
-            self.mPres.addFilters({"Equals": [["internal", True]],
-                                   "GreaterThan": [["manHours", 0]],
-                                   "Date": [["createdAt", package["dateBegin"], package["dateEnd"]]]})
-            self.mTable = self.mPres.getTable(["school", "manHours", "createdAt"], fuzzy=self.mConfig["school"])
-
-            # Get mean, lower quartile, median, upper quartile
-            stats = Statistics.Statistics()
-            vConfig["statistics"].append(stats.getGroupedStats(self.mTable, "school", "manHours"))
-
-            # Filter out all schools with less than 15 jobs total (to stop clutter of school, where there is not enough
-            # information to show on graph.
-            filt = Filtering.Filtering()
-            filt.cntDrop(self.mTable, "school", package["minimumCount"])
-
-            # Create boxplot class, and pass in columns/categories for plotting
-            plot = bxplt.BoxPlot()
-            plot.uniqueBoxplot(self.mTable.school, self.mTable.manHours)
-            vConfig["graphs"].append(plot)
-
-            # Add date range to view config
-            if package["dateBegin"] == "":
-                vConfig["dateBegin"].append(self.mTable.createdAt.min().date().strftime("%d/%m/%Y"))
+            # Get the dateBegin and dateEnd
+            dateBegin = ""
+            dateEnd = ""
+            # Check whether key exists/open-ended
+            if ("dateBegin" not in package) or package["dateBegin"] == "":
+                # Use minimum date in dataframe
+                dateBegin = self.mTable.createdAt.min().date().strftime("%d/%m/%Y")
             else:
-                vConfig["dateBegin"].append(package["dateBegin"])
-
-            if package["dateEnd"] == "":
-                vConfig["dateEnd"].append(dt.date.today().strftime("%d/%m/%Y"))
+                dateBegin = package["dateBegin"]
+            # Check whether key exists/open-ended
+            if ("dateEnd" not in package) or package["dateEnd"] == "":
+                # Use current date
+                dateEnd = dt.date.today().strftime("%d/%m/%Y")
             else:
-                vConfig["dateEnd"].append(package["dateEnd"])
+                dateEnd = package["dateEnd"]
+            # Append dates to vConfig
+            vConfig["dateBegin"].append(dateBegin)
+            vConfig["dateEnd"].append(dateEnd)
+
+            if package["type"] == "jobs":
+                self.jobsTable(vConfig, dateBegin, dateEnd, package["minimumCount"])
+            elif package["type"] == "jobsType":
+                self.jobsTypeTable(vConfig, dateBegin, dateEnd, package["minimumCount"])
+
 
         # Create view
         view = vw.View()
@@ -97,6 +90,47 @@ class Controller:
         view.updateBank(vConfig)
         # Create pdf
         view.createPDF()
+        return
+
+    def jobsTable(self, config, dateBegin, dateEnd, minimumCount):
+        # Get table within date period from config
+        self.mPres.clearFilters()
+        self.mPres.addFilters({"Equals": [["internal", True]],
+                               "GreaterThan": [["manHours", 0]],
+                               "Date": [["createdAt", dateBegin, dateEnd]]})
+        self.mTable = self.mPres.getTable(["school", "manHours", "createdAt"], fuzzy=self.mConfig["school"])
+
+        # Get mean, lower quartile, median, upper quartile
+        stats = Statistics.Statistics()
+        config["statistics"].append(stats.getGroupedStats(self.mTable, "school", "manHours"))
+
+        # Filter out all schools with less than 15 jobs total (to stop clutter of school, where there is not enough
+        # information to show on graph.
+        filt = Filtering.Filtering()
+        filt.cntDrop(self.mTable, "school", minimumCount)
+
+        # Create boxplot class, and pass in columns/categories for plotting
+        plot = bxplt.BoxPlot()
+        plot.uniqueBoxplot(self.mTable.school, self.mTable.manHours)
+        config["graphs"].append(plot)
+        return
+
+    def jobsTypeTable(self, config, dateBegin, dateEnd, minimumCount):
+        # Get table within date period from config
+        self.mPres.clearFilters()
+        self.mPres.addFilters({"Equals": [["internal", True]],
+                               "GreaterThan": [["manHours", 0]],
+                               "Date": [["createdAt", dateBegin, dateEnd]]})
+        self.mTable = self.mPres.getTable(["jobType", "manHours"], fuzzy=self.mConfig["school"])
+
+        # Get mean, lower quartile, median, upper quartile
+        stats = Statistics.Statistics()
+        config["statistics"].append(stats.getGroupedStats(self.mTable, "jobType", "manHours"))
+
+        # Create boxplot class, and pass in columns/categories for plotting
+        plot = bxplt.BoxPlot()
+        plot.uniqueBoxplot(self.mTable.jobType, self.mTable.manHours)
+        config["graphs"].append(plot)
         return
 
     mTable = None

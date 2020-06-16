@@ -62,9 +62,10 @@ class Presenter:
 
     # Rename the columns to follow camelCase for consistency.
     def _renameColumns(self):
-        self._mTable.rename(columns={'man_hours': 'manHours', "school_id":"school",
-                                    'completed_time': 'completedTime', 'created_at': 'createdAt',
-                                    'updated_at': 'updatedAt', 'deleted_at': 'deletedAt'},
+        self._mTable.rename(columns={"man_hours": "manHours", "school_id":"school",
+                                    "completed_time": "completedTime", "created_at": "createdAt",
+                                    "updated_at": "updatedAt", "deleted_at": "deletedAt",
+                                     "job_type": "jobType"},
                            inplace=True)
         return
 
