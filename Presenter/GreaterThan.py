@@ -4,7 +4,6 @@ class GreaterThan:
         self.mValue = parameterPack[1]
         return
     def filter(self, table):
-        # table.drop(table[(table[self.mKey] <= self.mValue)].index, axis=0, inplace=True)
         return table[self.mKey] > self.mValue
 
     mKey = None

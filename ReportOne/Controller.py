@@ -110,8 +110,10 @@ class Controller:
 
         # Filter out all schools with less than 15 jobs total (to stop clutter of school, where there is not enough
         # information to show on graph.
-        filt = Filtering.Filtering()
-        filt.cntDrop(self.mTable, "school", minimumCount)
+        self.mPres.addFilters({"CntDrop": [["school", minimumCount]]})
+        self.mTable = self.mPres.getTable(["school", "manHours", "createdAt"], fuzzy=self.mConfig["school"])
+        # filt = Filtering.Filtering()
+        # filt.cntDrop(self.mTable, "school", minimumCount)
 
         # Create boxplot class, and pass in columns/categories for plotting
         plot = bxplt.BoxPlot()

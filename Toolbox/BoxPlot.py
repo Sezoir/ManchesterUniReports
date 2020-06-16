@@ -25,7 +25,7 @@ class BoxPlot:
             data.append(values[labels == label])
         # Add newlines where needed to labels
         for indx in range(len(unique)):
-            unique[indx] = txt.Text().addSeperator(unique[indx])
+            unique[indx] = txt.Text().addSeperator(unique[indx], maxspace=20)
         # Store processed data.
         self.mLabels = unique
         self.mData = data
@@ -39,6 +39,8 @@ class BoxPlot:
         # Plot graph
         axes.set_title(title)
         bxPlot = axes.boxplot(x=self.mData, labels=self.mLabels, showfliers=outlier)
+        # Rotate and change xtick labels size
+        plt.xticks(rotation=90, fontsize=8)
         # Store the whiskers generator of the plot
         self.mWhiskers = (x.get_ydata()[1] for x in bxPlot["whiskers"])
         # Adjust boundary spacing of graph

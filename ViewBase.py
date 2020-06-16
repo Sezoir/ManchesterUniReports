@@ -68,7 +68,7 @@ class ViewBase:
             # Dynamic matplotlib y lims
             plt.ylim((0, np.array(list(graph.mWhiskers)).max() + 10))
             # Add plot to document
-            plot.add_plot(width=pyl.NoEscape(r"0.9\textwidth"), dpi=300)
+            plot.add_plot(width=pyl.NoEscape(r"0.9\textwidth"), dpi=600)
         return
 
     # Takes a dataframe and adds a multirow table to the document
