@@ -25,7 +25,7 @@ class BoxPlot:
             data.append(values[labels == label])
         # Add newlines where needed to labels
         for indx in range(len(unique)):
-            unique[indx] = txt.Text().addSeperator(unique[indx], maxspace=20)
+            unique[indx] = txt.Text().addSeperator(unique[indx], maxspace=30)
         # Store processed data.
         self.mLabels = unique
         self.mData = data

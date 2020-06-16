@@ -10,7 +10,6 @@ class CntDrop:
         cnt = table[self.mKey].value_counts(dropna=False).to_dict()
         # Get array for true values
         mask = [True for x in table.index]
-        print(cnt)
         # Drop all keys with less than minimum count
         for key in uniqueKeys:
             if cnt[key] < self.mValue:
