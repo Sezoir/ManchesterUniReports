@@ -55,7 +55,8 @@ class Controller:
             "statistics": [],
             "graphs": [],
             "dateBegin": [],
-            "dateEnd": []
+            "dateEnd": [],
+            "type": []
         }
         # Loop through each date
         for package in self.mConfig["data"]:
@@ -78,11 +79,14 @@ class Controller:
             vConfig["dateBegin"].append(dateBegin)
             vConfig["dateEnd"].append(dateEnd)
 
+            # Create report depending on type in config
             if package["type"] == "jobs":
-                self.jobsTable(vConfig, dateBegin, dateEnd, package["minimumCount"])
+                self.jobsReport(vConfig, dateBegin, dateEnd, package["minimumCount"])
             elif package["type"] == "jobsType":
-                self.jobsTypeTable(vConfig, dateBegin, dateEnd, package["minimumCount"])
+                self.jobsTypeReport(vConfig, dateBegin, dateEnd, package["minimumCount"])
 
+            # Store type of report created
+            vConfig["type"].append(package["type"])
 
         # Create view
         view = vw.View()
@@ -92,7 +96,7 @@ class Controller:
         view.createPDF()
         return
 
-    def jobsTable(self, config, dateBegin, dateEnd, minimumCount):
+    def jobsReport(self, config, dateBegin, dateEnd, minimumCount):
         # Get table within date period from config
         self.mPres.clearFilters()
         self.mPres.addFilters({"Equals": [["internal", True]],
@@ -115,7 +119,7 @@ class Controller:
         config["graphs"].append(plot)
         return
 
-    def jobsTypeTable(self, config, dateBegin, dateEnd, minimumCount):
+    def jobsTypeReport(self, config, dateBegin, dateEnd, minimumCount):
         # Get table within date period from config
         self.mPres.clearFilters()
         self.mPres.addFilters({"Equals": [["internal", True]],
