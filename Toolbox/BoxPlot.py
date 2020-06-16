@@ -38,7 +38,9 @@ class BoxPlot:
         fig, axes = plt.subplots()
         # Plot graph
         axes.set_title(title)
-        axes.boxplot(x=self.mData, labels=self.mLabels, showfliers=outlier)
+        bxPlot = axes.boxplot(x=self.mData, labels=self.mLabels, showfliers=outlier)
+        # Store the whiskers generator of the plot
+        self.mWhiskers = (x.get_ydata()[1] for x in bxPlot["whiskers"])
         # Adjust boundary spacing of graph
         plt.tight_layout()
         # Add grid
@@ -49,3 +51,4 @@ class BoxPlot:
 
     mLabels = None
     mData = None
+    mWhiskers = None

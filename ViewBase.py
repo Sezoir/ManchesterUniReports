@@ -1,6 +1,9 @@
 ## PDF creator
 import pylatex as pyl
 
+# General array math library
+import numpy as np
+
 ## Graph library
 import matplotlib.pyplot as plt
 
@@ -57,14 +60,13 @@ class ViewBase:
 
     # Add a graph to the document
     # @todo: change to allow flexible pylatex parameters (probably using dict)
-    def addGraph(self, doc, graph, *, ylim=(), **graphOptions):
+    def addGraph(self, doc, graph, **graphOptions):
         # Attempt to create figure
         with doc.create(pyl.Figure(position="H")) as plot:
             # Plot graph
             graph.draw(**graphOptions)
-            # Matplotlib axes options
-            if ylim != ():
-                plt.ylim(ylim)
+            # Dynamic matplotlib y lims
+            plt.ylim((0, np.array(list(graph.mWhiskers)).max() + 10))
             # Add plot to document
             plot.add_plot(width=pyl.NoEscape(r"0.9\textwidth"), dpi=300)
         return

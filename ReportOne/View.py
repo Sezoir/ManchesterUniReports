@@ -38,7 +38,7 @@ class View(vwbs.ViewBase):
                 sec.append("A table showing statistics of all jobs created between " + self.mBank["dateBegin"][ind]+" - "+self.mBank["dateEnd"][ind] + " arranged per school.")
                 # Add long table of statistics to section
                 self.addTable(sec, self.mBank["statistics"][ind], subxlabel={"#":["count"], "Hours":["mean", "lower quartile", "median", "upper quartile"]})
-                self.addGraph(sec, self.mBank["graphs"][ind], ylim=(0, 80), title="Schools against manHours")
+                self.addGraph(sec, self.mBank["graphs"][ind], title="Schools against manHours")
             # Append new page after table/graph
             self.mDoc.append(pyl.NewPage())
 
